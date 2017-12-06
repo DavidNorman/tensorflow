@@ -134,6 +134,8 @@ Status MetaOptimizer::Optimize(Cluster* cluster, const GrapplerItem& item,
             ". Graph size after: ", optimized_graph->node_size());
       }
       result_.push_back(std::make_pair(optimizer->name(), result));
+      VLOG(1) << "Optimizer " << optimizer->name()
+              << " return status: " << result;
     } else {
       GrapplerItem optimized_item(item, std::move(*optimized_graph));
       auto status =
@@ -152,11 +154,13 @@ Status MetaOptimizer::Optimize(Cluster* cluster, const GrapplerItem& item,
             ". Graph size after: ", optimized_graph->node_size());
       }
       result_.push_back(std::make_pair(optimizer->name(), result));
+      VLOG(1) << "Optimizer " << optimizer->name()
+              << " return status: " << result;
     }
   }
 
   if (already_optimized) {
-    TopologicalSort(optimized_graph);
+    TF_RETURN_IF_ERROR(TopologicalSort(optimized_graph));
     // Make sure that the optimizers preserved the graph version and library.
     DCHECK_GE(optimized_graph->library().function_size(),
               item.graph.library().function_size());
